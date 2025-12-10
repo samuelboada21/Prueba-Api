@@ -56,7 +56,11 @@ router.post("/updateEstadoPipeline", (req, res) => {
 
   return res.json({
     mensaje: "Estado actualizado correctamente",
-    asociado,
+    asociado: {
+      Nombre: asociado.Nombre,
+      Estado: asociado.estado_pipeline,
+      Ultima_Actualizacion: asociado.ultima_actualizacion
+    },
   });
 });
 
