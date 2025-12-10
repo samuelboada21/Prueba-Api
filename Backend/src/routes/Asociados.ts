@@ -1,47 +1,26 @@
 import { Router } from "express";
 import { estadoUpdateRequest } from "../types/EstadoUpdateRequest";
 import { Asociado } from "../types/Asociado";
+import {
+  validarAporteJuridico,
+  validarEstadoPermitido,
+  validarTransicion,
+} from "../validations/asociadoValidation";
 
 const router = Router();
 
-const estadosPermitidos = [
-  "Prospecto",
-  "Expediente en Construcción",
-  "Pendiente Jurídico",
-  "Pendiente Cierre de Crédito",
-  "Pendiente Firma y Litivo",
-  "Pendiente Revisión Abogado",
-  "Cartera Activa",
-  "Desembolsado/Finalizado",
-];
+let asociados: Asociado[] = [];
 
-const flujoEstados: { [key: string]: string } = {
-  "Prospecto": "Expediente en Construcción",
-  "Expediente en Construcción": "Pendiente Jurídico",
-  "Pendiente Jurídico": "Pendiente Cierre de Crédito",
-  "Pendiente Cierre de Crédito": "Pendiente Firma y Litivo",
-  "Pendiente Firma y Litivo": "Pendiente Revisión Abogado",
-  "Pendiente Revisión Abogado": "Cartera Activa",
-  "Cartera Activa": "Desembolsado/Finalizado",
-  "Desembolsado/Finalizado": "",
-};
-
-let asociados: Asociado[] = [
-  {
-    id: "asoc001",
-    Nombre: "Juan Pérez",
-    Identificación: "10203040",
-    estado_pipeline: "Prospecto",
-    aporte_49900_pagado: false,
-  },
-  {
-    id: "asoc002",
-    Nombre: "María Gómez",
-    Identificación: "99442211",
-    estado_pipeline: "Expediente en Construcción",
-    aporte_49900_pagado: true,
-  },
-];
+export async function cargarAsociados(url: string) {
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    asociados = data as Asociado[];
+    console.log("Asociados cargados:", asociados.length);
+  } catch (error) {
+    console.error("Error cargando asociados:", error);
+  }
+}
 
 router.post("/updateEstadoPipeline", (req, res) => {
   const body = req.body as estadoUpdateRequest;
@@ -51,30 +30,22 @@ router.post("/updateEstadoPipeline", (req, res) => {
       error: "Falta información, por favor envie correctamente los datos",
     });
   }
-  if (!estadosPermitidos.includes(body.nuevoEstado)) {
-    return res.status(400).json({ error: "El estado no es permitido" });
-  }
 
   const asociado = asociados.find((a) => a.id === body.asociadoId);
 
   if (!asociado) {
     return res.status(404).json({ error: "Asociado no encontrado" });
   }
-
-  //Validacion de aporte
-  if (
-    body.nuevoEstado === "Pendiente Jurídico" &&
-    !asociado.aporte_49900_pagado
-  ) {
+  if (!validarEstadoPermitido(body.nuevoEstado)) {
+    return res.status(400).json({ error: "Estado no permitido" });
+  }
+  if (!validarAporteJuridico(asociado, body.nuevoEstado)) {
     return res.status(400).json({
       error:
-        "No es posible avanzar a Pendiente Jurídico porque el aporte 49.900 no está pagado",
+        "No se puede avanzar a 'Pendiente Jurídico' porque el aporte 49.900 no está pagado",
     });
   }
-
-  //Validacion de siguiente estado
-  const sigEstadoPermitido = flujoEstados[asociado.estado_pipeline];
-  if (body.nuevoEstado !== sigEstadoPermitido) {
+  if (!validarTransicion(asociado, body.nuevoEstado)) {
     return res.status(400).json({
       error: `Transición no permitida de '${asociado.estado_pipeline}' a '${body.nuevoEstado}'`,
     });
