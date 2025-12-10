@@ -1,5 +1,6 @@
 export interface Asociado {
-    nombre: string;
-    identificacion: string;
+    id: string;
+    Nombre: string;
+    Identificación: string;
     estado_pipeline: string;
 }

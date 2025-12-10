@@ -10,14 +10,26 @@ export function AsociadosList() {
     return (
         <div style={{padding: "20px"}}>
             <h2>Asociados</h2>
-
-            <ul>
-                {data.map((a, index) => (
-                    <li key={index}>
-                        {a.Nombre} - {a.Identificación} - {a.estado_pipeline}
-                    </li>
-                ))}
-            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Identificación</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map((a,index) => (
+                        <tr key={index}>
+                            <td>{a.id}</td>
+                            <td>{a.Nombre}</td>
+                            <td>{a.Identificación}</td>
+                            <td>{a.estado_pipeline}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 }
