@@ -1,37 +1,40 @@
 import { useEffect, useState } from "react";
 import type { Asociado } from "../types/Asociado";
 
+export function useAsociados() {
+  const [data, setData] = useState<Asociado[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function useAsociados(){
-    const [data, setData] = useState<Asociado[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const URL = import.meta.env.VITE_API_ASOCIADOS_URL;
 
-    const URL = import.meta.env.VITE_API_ASOCIADOS_URL;
+  useEffect(() => {
+    async function fecthData() {
+      try {
+        setLoading(true);
+        const response = await fetch(URL);
 
-    useEffect(() => {
-        async function fecthData() {
-            try {
-                setLoading(true);
-                const res = await fetch(URL);
-
-                if(!res.ok){
-                    throw new Error("Error al obtener los datos");
-                }
-
-                const response: Asociado[] = await res.json();
-                setData(response);
-            } catch (error: unknown) {
-                if (error instanceof Error) {
-                    setError(error.message);
-                } else {
-                    setError("Se produjo un error desconocido")
-                }
-            } finally {
-                setLoading(false);
-            }
+        if (!response.ok) {
+          throw new Error("Error al obtener los datos");
         }
-        fecthData();
-    }, [URL]);
-    return {data, loading, error}
+        const result: Asociado[] = await response.json();
+
+        const order = result.sort((a: Asociado, b: Asociado) =>
+          a.Nombre.localeCompare(b.Nombre)
+        );
+
+        setData(order);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Se produjo un error desconocido");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    fecthData();
+  }, [URL]);
+  return { data, loading, error };
 }
