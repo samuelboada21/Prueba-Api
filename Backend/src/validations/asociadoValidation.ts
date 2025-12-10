@@ -12,7 +12,7 @@ const estadosPermitidos = [
 ];
 
 const flujoEstados: { [key: string]: string } = {
-  Prospecto: "Expediente en Construcción",
+  "Prospecto": "Expediente en Construcción",
   "Expediente en Construcción": "Pendiente Jurídico",
   "Pendiente Jurídico": "Pendiente Cierre de Crédito",
   "Pendiente Cierre de Crédito": "Pendiente Firma y Litivo",
