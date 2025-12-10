@@ -7,7 +7,7 @@ export function useAsociados(){
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const URL = "https://raw.githubusercontent.com/managerrojo/COAVANCOL-Prueba-T-cnica-/refs/heads/main/IndexAsociados";
+    const URL = import.meta.env.VITE_API_ASOCIADOS_URL;
 
     useEffect(() => {
         async function fecthData() {
@@ -32,6 +32,6 @@ export function useAsociados(){
             }
         }
         fecthData();
-    }, []);
+    }, [URL]);
     return {data, loading, error}
 }
